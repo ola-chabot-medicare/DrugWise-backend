@@ -4,9 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class ChatRequest(BaseModel):
-    model_provider: str
     message: str
-    model: str
 
 
 class StandardResponse(BaseModel):

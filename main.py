@@ -18,7 +18,7 @@ from utils.logger import logger
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Runs once on startup and once on shutdown."""
-    logger.info("🚀 Medical Chatbot starting up...")
+    logger.info("Medical Chatbot starting up...")
     # Test ChromaDB connection before accepting any requests
     if test_chroma_connection():
         logger.info(" ChromaDB is ready.")
