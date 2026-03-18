@@ -223,15 +223,3 @@ flake8 app/
 | Resource | Description |
 |----------|-------------|
 | 🎨 [Frontend](../frontend) | The frontend application for this chatbot |
-
----
-
-## 📄 License
-
-This project is part of the MedicalChatbot application.
-
----
-
-<p align="center">
-  Made with ❤️ using FastAPI, LangChain & ChromaDB
-</p>
