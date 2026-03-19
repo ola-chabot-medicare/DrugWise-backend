@@ -2,8 +2,8 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6F61?style=for-the-badge&logo=databricks&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 A FastAPI-based backend service for a medical chatbot application. It leverages **ChromaDB Cloud** for Retrieval-Augmented Generation (RAG) using FDA-approved drug data, and uses **OpenAI** (gpt-4o-mini) to generate accurate, heavily-guarded medical responses.
 
