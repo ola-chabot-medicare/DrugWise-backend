@@ -18,7 +18,7 @@ from utils.logger import logger
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Runs once on startup and once on shutdown."""
-    logger.info("🚀 Medical Chatbot starting up...")
+    logger.info("DrugWise starting up...")
     # Test ChromaDB connection before accepting any requests
     if test_chroma_connection():
         logger.info(" ChromaDB is ready.")
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="PharmRAG - Medical Chatbot API",
+    title="DrugWise - Medical Chatbot API",
     description="RAG-based medical chatbot powered by FDA data, ChromaDB, FastAPI & LangChain.",
     version="0.1.0",
     lifespan=lifespan,
