@@ -2,224 +2,113 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6F61?style=for-the-badge&logo=databricks&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-A FastAPI-based backend service for a medical chatbot application, leveraging ChromaDB for vector storage and LangChain for conversational AI capabilities.
+A FastAPI-based backend service for a medical chatbot application. It leverages **ChromaDB Cloud** for Retrieval-Augmented Generation (RAG) using FDA-approved drug data, and uses **OpenAI** (gpt-4o-mini) to generate accurate, heavily-guarded medical responses.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Technology | Description |
 |------------|-------------|
-| ![Python](https://img.shields.io/badge/-Python-3776AB?style=flat-square&logo=python&logoColor=white) | Core programming language |
-| ![FastAPI](https://img.shields.io/badge/-FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white) | Modern, high-performance web framework for building APIs |
-| ![ChromaDB](https://img.shields.io/badge/-ChromaDB-FF6F61?style=flat-square&logo=databricks&logoColor=white) | Vector database for efficient similarity search and retrieval |
-| ![LangChain](https://img.shields.io/badge/-LangChain-1C3C3C?style=flat-square&logo=langchain&logoColor=white) | Framework for developing LLM-powered applications |
-| ![Uvicorn](https://img.shields.io/badge/-Uvicorn-499848?style=flat-square&logo=gunicorn&logoColor=white) | ASGI server for running the FastAPI application |
+| **Python** | Core programming language |
+| **FastAPI** | Modern, high-performance web framework for the API |
+| **ChromaDB Cloud** | Vector database for efficient semantic search of FDA documents |
+| **OpenAI API** | Large Language Model used to generate conversational context |
+| **Uvicorn** | ASGI server for running the FastAPI application |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 backend/
-│
-├── 📂 api/                      # API layer
-│   └── routes.py                # API route definitions and endpoint handlers
-│
-├── 📂 config/                   # Configuration
-│   └── settings.py              # Application settings and environment variables
-│
-├── 📂 models/                   # Data models
-│   └── schemas.py               # Pydantic request/response schemas
-│
-├── 📂 services/                 # External service integrations
-│   └── llm.py                   # LangChain LLM integration
-│
-├── 📂 utils/                    # Utility functions
-│   └── logger.py                # Logging configuration and utilities
-│
-├── 📄 .env                      # Environment variables (not in git)
-├── 📄 .gitignore                # Git ignore rules
-├── 📄 Dockerfile                # Docker container configuration
-├── 📄 example.env               # Environment variables template
-├── 📄 main.py                   # FastAPI application entry point
-├── 📄 README.md                 # Project documentation
-└── 📄 requirements.txt          # Python dependencies
+├── api/                      # API layer
+│   └── routes.py             # Defines the POST /api/chat endpoint
+├── config/                   # Configuration
+│   ├── settings.py           # Pydantic BaseSettings for .env variables
+│   └── chroma.py             # ChromaDB Cloud connection initialization
+├── models/                   # Data models
+│   └── schemas.py            # Pydantic schemas (ChatRequest, StandardResponse)
+├── scripts/                  # Standalone utilities
+│   └── import_data.py        # Ingests FDA JSON data into ChromaDB
+├── services/                 # Business logic
+│   ├── llm.py                # Connects to OpenAI with medical SYSTEM_PROMPT
+│   └── rag.py                # Retrieves Top-K documents from ChromaDB
+├── utils/                    # Utility functions
+│   └── logger.py             # Custom logging
+├── .env                      # Environment variables (ignored by git)
+├── main.py                   # FastAPI application entry point
+├── README.md                 # Project documentation
+└── requirements.txt          # Python dependencies
 ```
 
-### 📂 Folder Descriptions
-
-| Folder | Purpose |
-|--------|---------|
-| `api/` | API layer with route handlers and endpoint definitions |
-| `config/` | Application configuration and environment settings |
-| `models/` | Pydantic schemas for request/response data validation |
-| `services/` | External service integrations (LLM, ChromaDB, embeddings) |
-| `utils/` | Shared utility functions like logging |
-
 ---
 
-## ⚙️ Prerequisites
+## Installation & Local Development
 
-- Python 3.10 or higher
-- pip (Python package manager)
-- Docker (optional, for containerized deployment)
-
----
-
-## 🚀 Installation
-
-### 💻 Local Development
-
-1. **Clone the repository** (if not already done):
+1. **Clone the repository**:
    ```bash
    git clone <repository-url>
    cd backend
    ```
 
-2. **Create a virtual environment**:
+2. **Create and activate a virtual environment**:
    ```bash
-   python -m venv venv
+   python3 -m venv venv
+   source venv/bin/activate    # Mac/Linux
+   # venv\Scripts\activate     # Windows
    ```
 
-3. **Activate the virtual environment**:
-   - Windows:
-     ```bash
-     venv\Scripts\activate
-     ```
-   - macOS/Linux:
-     ```bash
-     source venv/bin/activate
-     ```
-
-4. **Install dependencies**:
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-5. **Set up environment variables**:
+4. **Set up environment variables**:
    Create a `.env` file in the root directory:
    ```env
-   # Add your environment variables here
-   # Example:
-   # OPENAI_API_KEY=your_api_key_here
+   # OpenAI Configuration
+   OPENAI_API_KEY=your_openai_api_key
+
+   # ChromaDB Cloud Configuration
+   CHROMA_API_KEY=your_chroma_api_key
+   CHROMA_TENANT=your_tenant_name
+   CHROMA_DATABASE=medicare-chatbot
    ```
 
-6. **Run the application**:
+5. **Run the application**:
    ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-### 🐳 Docker Deployment
-
-1. **Build the Docker image**:
-   ```bash
-   docker build -t medical-chatbot-backend .
-   ```
-
-2. **Run the container**:
-   ```bash
-   docker run -p 8000:8000 medical-chatbot-backend
+   uvicorn main:app --reload
    ```
 
 ---
 
-## 📖 API Documentation
+## API Documentation
 
-Once the server is running, you can access:
+Once the server is running, FastAPI automatically generates interactive documentation:
 
-| Documentation | URL |
-|---------------|-----|
-| 📗 Swagger UI | [http://localhost:8000/docs](http://localhost:8000/docs) |
-| 📘 ReDoc | [http://localhost:8000/redoc](http://localhost:8000/redoc) |
+* **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+* **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ---
 
-## ✨ Features
-
-| Feature | Description |
-|---------|-------------|
-| 🤖 **AI-Powered Chat** | Conversational AI powered by LangChain and LLMs |
-| 🔍 **Semantic Search** | Vector-based document retrieval using ChromaDB |
-| ⚡ **High Performance** | Fast and async request handling with FastAPI |
-| 📚 **RAG Pipeline** | Retrieval-Augmented Generation for accurate medical responses |
-| 🔒 **Secure** | Environment-based configuration for sensitive data |
-
----
-
-## 🔐 Environment Variables
-
-Create a `.env` as same as `example.env` file in the root directory:
-
-```env
-# LLM Configuration
-OPENAI_API_KEY=your_openai_api_key_here
-
-# ChromaDB Configuration
-CHROMA_PERSIST_DIR=./data/chroma_db
-
-# Application Settings
-APP_ENV=development
-DEBUG=true
-```
-
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `OPENAI_API_KEY` | OpenAI API key for LLM access | ✅ Yes | - |
-| `CHROMA_PERSIST_DIR` | ChromaDB persistence directory | ❌ No | `./data/chroma_db` |
-| `APP_ENV` | Application environment | ❌ No | `development` |
-| `DEBUG` | Enable debug mode | ❌ No | `false` |
-
----
-
-## 🧪 Development
-
-### Running Tests
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=app tests/
-
-# Run specific test file
-pytest tests/test_api/test_chat.py
-```
-
-### Code Formatting
-
-```bash
-# Install dev dependencies
-pip install black isort flake8
-
-# Format code
-black .
-isort .
-
-# Lint code
-flake8 app/
-```
-
----
-
-## 📡 API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/health` | Health check endpoint |
-| `POST` | `/api/chat` | Send message to chatbot |
-| `GET` | `/api/chat/history` | Get conversation history |
-| `DELETE` | `/api/chat/history` | Clear conversation history |
+| `GET` | `/health` | Health check (tests ChromaDB connection) |
+| `POST` | `/api/chat` | Main endpoint. Accepts `{ "message": "query" }` and returns the RAG LLM answer |
 
 ---
 
-## 🔗 Related
+## FDA Data Ingestion
 
-| Resource | Description |
-|----------|-------------|
-| 🎨 [Frontend](../frontend) | The frontend application for this chatbot |
+To populate your ChromaDB Cloud with the latest FDA data, place the `drug-label.json` and `drug-ndc.json` files in your directory (or ensure paths match) and run:
+
+```bash
+python3 scripts/import_data.py
+```
+This script automatically batches records, inserts metadata, creates embeddings, and upserts them into vector storage.
