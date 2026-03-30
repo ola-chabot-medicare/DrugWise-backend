@@ -219,3 +219,5 @@ chroma_db/
 
 .DS_Store
 CLAUDE.md
+
+.claudeignore
