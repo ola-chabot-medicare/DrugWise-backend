@@ -7,11 +7,11 @@ from utils.logger import logger
 
 
 """ 1. Function Signature """
-def retrieve_context(question: str, n_results: int = 5) -> str:
+def retrieve_context(question: str, n_results: int = 3) -> str:
     """
     Search ChromaDB for most relevant FDA documents matching the question.
     - question
-    - n_results = retrieve top 5 most relevant documents
+    - n_results = retrieve top 3 most relevant documents
     - return: a formatted string of FDA context for LLM
     """
 
