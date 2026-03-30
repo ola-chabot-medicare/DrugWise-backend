@@ -1,4 +1,4 @@
-# ⚙️ DrugWise Backend
+# DrugWise Backend
 
 The powerful Python backend running the intelligence behind the DrugWise medical chatbot. 
 
