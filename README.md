@@ -1,114 +1,53 @@
-# DrugWise Backend
+# ⚙️ DrugWise Backend
 
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6F61?style=for-the-badge&logo=databricks&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+The powerful Python backend running the intelligence behind the DrugWise medical chatbot. 
 
-A FastAPI-based backend service for a medical chatbot application. It leverages **ChromaDB Cloud** for Retrieval-Augmented Generation (RAG) using FDA-approved drug data, and uses **OpenAI** (gpt-4o-mini) to generate accurate, heavily-guarded medical responses.
+It uses a custom **Retrieval-Augmented Generation (RAG)** pipeline to instantly search through FDA drug documents and feed them to an AI model. This ensures the chatbot answers medical questions using real, verified medical data rather than hallucinating from scratch.
 
----
+## ✨ Features
 
-## Tech Stack
+- 🧠 **RAG Architecture**: Takes user questions, vectorizes them, and searches a database full of FDA drug labels in milliseconds.
+- ⚡ **Lightning Fast Caching**: Automatically remembers previous medical questions. If a user asks a duplicate question, the server intercepts it and returns the answer instantly (0.01s) without wasting API budget.
+- 📖 **Automatic API Docs**: Built on FastAPI, which automatically generates an interactive Swagger UI dashboard for developers to test endpoints.
+- 🛡️ **Budget Protected**: Requires local environment variables so your personal OpenAI API keys are never leaked to the public.
 
-| Technology | Description |
-|------------|-------------|
-| **Python** | Core programming language |
-| **FastAPI** | Modern, high-performance web framework for the API |
-| **ChromaDB Cloud** | Vector database for efficient semantic search of FDA documents |
-| **OpenAI API** | Large Language Model used to generate conversational context |
-| **Uvicorn** | ASGI server for running the FastAPI application |
+## 🛠 Tech Stack
 
----
+- **FastAPI** 🚀 (For a blazing fast, asynchronous Python server)
+- **ChromaDB** 🗄️ (For storing and searching high-dimensional FDA vector data)
+- **OpenAI API** 🤖 (Powered by `gpt-4o-mini` for fast medical reasoning)
 
-## Project Structure
+## 🚀 How to run locally
 
-```
-backend/
-├── api/                      # API layer
-│   └── routes.py             # Defines the POST /api/chat endpoint
-├── config/                   # Configuration
-│   ├── settings.py           # Pydantic BaseSettings for .env variables
-│   └── chroma.py             # ChromaDB Cloud connection initialization
-├── models/                   # Data models
-│   └── schemas.py            # Pydantic schemas (ChatRequest, StandardResponse)
-├── scripts/                  # Standalone utilities
-│   └── import_data.py        # Ingests FDA JSON data into ChromaDB
-├── services/                 # Business logic
-│   ├── llm.py                # Connects to OpenAI with medical SYSTEM_PROMPT
-│   └── rag.py                # Retrieves Top-K documents from ChromaDB
-├── utils/                    # Utility functions
-│   └── logger.py             # Custom logging
-├── .env                      # Environment variables (ignored by git)
-├── main.py                   # FastAPI application entry point
-├── README.md                 # Project documentation
-└── requirements.txt          # Python dependencies
-```
+If you want to run the backend engine yourself, follow these steps:
 
----
-
-## Installation & Local Development
-
-1. **Clone the repository**:
+1. **Clone the code**:
    ```bash
-   git clone <repository-url>
-   cd backend
+   git clone https://github.com/ola-chabot-medicare/DrugWise-backend.git
+   cd DrugWise-backend
    ```
 
-2. **Create and activate a virtual environment**:
+2. **Create a virtual environment** (recommended):
    ```bash
    python3 -m venv venv
-   source venv/bin/activate    # Mac/Linux
-   # venv\Scripts\activate     # Windows
+   source venv/bin/activate
    ```
 
-3. **Install dependencies**:
+3. **Install the dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Set up environment variables**:
-   Create a `.env` file in the root directory:
+4. **Setup your secret keys**:
+   Create a new file called `.env` in the root folder and add your OpenAI key. This prevents your budget from being used by mistake:
    ```env
-   # OpenAI Configuration
-   OPENAI_API_KEY=your_openai_api_key
-
-   # ChromaDB Cloud Configuration
-   CHROMA_API_KEY=your_chroma_api_key
-   CHROMA_TENANT=your_tenant_name
-   CHROMA_DATABASE=medicare-chatbot
+   OPENAI_API_KEY=sk-your-secret-key
    ```
 
-5. **Run the application**:
+5. **Start the server**:
    ```bash
    uvicorn main:app --reload
    ```
 
----
-
-## API Documentation
-
-Once the server is running, FastAPI automatically generates interactive documentation:
-
-* **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
-* **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check (tests ChromaDB connection) |
-| `POST` | `/api/chat` | Main endpoint. Accepts `{ "message": "query" }` and returns the RAG LLM answer |
-
----
-
-## FDA Data Ingestion
-
-To populate your ChromaDB Cloud with the latest FDA data, place the `drug-label.json` and `drug-ndc.json` files in your directory (or ensure paths match) and run:
-
-```bash
-python3 scripts/import_data.py
-```
-This script automatically batches records, inserts metadata, creates embeddings, and upserts them into vector storage.
+6. **Test the API**:
+   Open your browser to `http://localhost:8000/docs` to see the auto-generated Swagger UI and test the `/api/chat` endpoint directly!
