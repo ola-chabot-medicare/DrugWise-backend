@@ -4,10 +4,10 @@ Hanlde incoming HTTP requests from frontend and connect them to RAG & LLM servic
 """
 
 from fastapi import APIRouter
-from models.schemas import ChatRequest, StandardResponse  # noqa: F401
-from services.rag import retrieve_context  # noqa: F401
-from services.llm import generate_answer  # noqa: F401
-from utils.logger import logger  # noqa: F401
+from models.schemas import ChatRequest, StandardResponse 
+from services.rag import retrieve_context  
+from services.llm import generate_answer  
+from utils.logger import logger  
 
 # Create a FastAPI router with prefix "/api"
 router = APIRouter(prefix="/api")  # All routes here will be prefixed with /api
