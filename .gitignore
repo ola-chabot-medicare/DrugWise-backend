@@ -5,11 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-<<<<<<< HEAD
-=======
 data/*.json
-
->>>>>>> origin/main
 
 # Distribution / packaging
 .Python

@@ -1,53 +1,94 @@
 # DrugWise Backend
 
-The powerful Python backend running the intelligence behind the DrugWise medical chatbot. 
+The FastAPI service behind [DrugWise](https://github.com/ola-chabot-medicare/DrugWise-frontend),
+a medical drug-information chatbot. Runs a Retrieval-Augmented Generation
+(RAG) pipeline over real FDA drug label and NDC data so answers are grounded
+in that data instead of the model guessing from general training knowledge.
 
-It uses a custom **Retrieval-Augmented Generation (RAG)** pipeline to instantly search through FDA drug documents and feed them to an AI model. This ensures the chatbot answers medical questions using real, verified medical data rather than hallucinating from scratch.
+## Why this exists
 
-## ✨ Features
+I built DrugWise to practice a full RAG pipeline end to end: chunking real
+FDA data, embedding and querying it from a hosted vector store, and wiring
+that retrieval into an LLM call behind a FastAPI service a separate frontend
+actually talks to — not a notebook demo.
 
-- 🧠 **RAG Architecture**: Takes user questions, vectorizes them, and searches a database full of FDA drug labels in milliseconds.
-- ⚡ **Lightning Fast Caching**: Automatically remembers previous medical questions. If a user asks a duplicate question, the server intercepts it and returns the answer instantly (0.01s) without wasting API budget.
-- 📖 **Automatic API Docs**: Built on FastAPI, which automatically generates an interactive Swagger UI dashboard for developers to test endpoints.
-- 🛡️ **Budget Protected**: Requires local environment variables so your personal OpenAI API keys are never leaked to the public.
+## Key features
 
-## 🛠 Tech Stack
+- **RAG pipeline**: FDA drug label and NDC records are chunked, embedded
+  (`text-embedding-3-small`), and stored in ChromaDB Cloud. Every question
+  triggers a top-K similarity search before the LLM ever sees it
+  (`services/rag.py`).
+- **Grounded generation**: `gpt-4o-mini` answers using the retrieved FDA
+  context plus a system prompt that enforces medical disclaimers and tells
+  the model to clearly label anything it's supplementing from general
+  knowledge (`services/llm.py`).
+- **Duplicate-question caching**: exact repeat questions are served from an
+  in-memory cache instead of re-calling OpenAI.
+- **Auto-generated API docs**: FastAPI's Swagger UI at `/docs` for testing
+  `/api/chat` directly, no separate client needed.
+- **Startup health check**: the app pings ChromaDB Cloud on startup and
+  exposes `/health` so the frontend can detect an unreachable backend.
 
-- **FastAPI** 🚀 (For a blazing fast, asynchronous Python server)
-- **ChromaDB** 🗄️ (For storing and searching high-dimensional FDA vector data)
-- **OpenAI API** 🤖 (Powered by `gpt-4o-mini` for fast medical reasoning)
+## Tech stack
 
-## 🚀 How to run locally
+Verified from `requirements.txt`.
 
-If you want to run the backend engine yourself, follow these steps:
+- FastAPI + Uvicorn
+- ChromaDB Cloud (vector database)
+- OpenAI API — `gpt-4o-mini` for generation, `text-embedding-3-small` for
+  embeddings
+- LangChain / `langchain-openai`
+- Pydantic for config and request/response schemas
 
-1. **Clone the code**:
-   ```bash
-   git clone https://github.com/ola-chabot-medicare/DrugWise-backend.git
-   cd DrugWise-backend
-   ```
+## Setup
 
-2. **Create a virtual environment** (recommended):
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+### 1. Clone and install
 
-3. **Install the dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+git clone https://github.com/ola-chabot-medicare/DrugWise-backend.git
+cd DrugWise-backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-4. **Setup your secret keys**:
-   Create a new file called `.env` in the root folder and add your OpenAI key. This prevents your budget from being used by mistake:
-   ```env
-   OPENAI_API_KEY=sk-your-secret-key
-   ```
+### 2. Configure environment variables
 
-5. **Start the server**:
-   ```bash
-   uvicorn main:app --reload
-   ```
+```bash
+cp example.env .env
+```
 
-6. **Test the API**:
-   Open your browser to `http://localhost:8000/docs` to see the auto-generated Swagger UI and test the `/api/chat` endpoint directly!
+Edit `.env` and fill in:
+- `OPENAI_API_KEY` — required
+- `CHROMA_API_KEY`, `CHROMA_TENANT`, `CHROMA_DATABASE` — from a
+  [ChromaDB Cloud](https://www.trychroma.com/) account (free tier works);
+  the client connects to Chroma Cloud only, there's no local/offline mode
+
+### 3. Ingest FDA data (needed for real, grounded answers)
+
+The `data/` directory (openFDA `drug-label.json` and `drug-ndc.json`) isn't
+shipped in this repo — download your own extract from
+[api.fda.gov](https://open.fda.gov/apis/drug/), drop the two files in
+`backend/data/`, then run:
+
+```bash
+python3 scripts/import_data.py
+```
+
+This embeds and upserts the records into your ChromaDB Cloud collection.
+Without this step the chatbot still runs, but `retrieve_context()` has
+nothing to retrieve, so every answer falls back to the model's general
+knowledge instead of FDA-sourced data.
+
+### 4. Run the server
+
+```bash
+uvicorn main:app --reload
+```
+
+Visit `http://localhost:8000/docs` for the interactive Swagger UI, or POST
+directly to `/api/chat`:
+
+```json
+{ "message": "What are the side effects of ibuprofen?", "model": "gpt-4o-mini", "model_provider": "openai" }
+```
