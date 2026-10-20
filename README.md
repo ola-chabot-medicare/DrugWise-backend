@@ -7,17 +7,19 @@ in that data instead of the model guessing from general training knowledge.
 
 ## Why this exists
 
-I built DrugWise to practice a full RAG pipeline end to end: chunking real
-FDA data, embedding and querying it from a hosted vector store, and wiring
+I built DrugWise to practice a full RAG pipeline end to end: embedding real
+FDA data and querying it from a hosted vector store, and wiring
 that retrieval into an LLM call behind a FastAPI service a separate frontend
 actually talks to — not a notebook demo.
 
 ## Key features
 
-- **RAG pipeline**: FDA drug label and NDC records are chunked, embedded
-  (`text-embedding-3-small`), and stored in ChromaDB Cloud. Every question
-  triggers a top-K similarity search before the LLM ever sees it
-  (`services/rag.py`).
+- **RAG pipeline**: each FDA drug label or NDC record becomes one document
+  (no chunking or overlap; each label section is cut to 500 characters),
+  embedded with `text-embedding-3-small`, and stored as one vector in
+  ChromaDB Cloud. Every question triggers a top-3 similarity search before
+  the LLM ever sees it. Each retrieved document is trimmed to 600 characters
+  in the prompt, and there is no similarity cutoff (`services/rag.py`).
 - **Grounded generation**: `gpt-4o-mini` answers using the retrieved FDA
   context plus a system prompt that enforces medical disclaimers and tells
   the model to clearly label anything it's supplementing from general
@@ -37,7 +39,8 @@ Verified from `requirements.txt`.
 - ChromaDB Cloud (vector database)
 - OpenAI API — `gpt-4o-mini` for generation, `text-embedding-3-small` for
   embeddings
-- LangChain / `langchain-openai`
+- `langchain` / `langchain-openai` are listed in `requirements.txt` but no
+  code imports them yet
 - Pydantic for config and request/response schemas
 
 ## Setup
@@ -75,7 +78,8 @@ shipped in this repo — download your own extract from
 python3 scripts/import_data.py
 ```
 
-This embeds and upserts the records into your ChromaDB Cloud collection.
+This embeds and upserts the first 10,000 NDC records and the first 20,000
+label records (one vector per record) into your ChromaDB Cloud collection.
 Without this step the chatbot still runs, but `retrieve_context()` has
 nothing to retrieve, so every answer falls back to the model's general
 knowledge instead of FDA-sourced data.
